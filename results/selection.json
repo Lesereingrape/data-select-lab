@@ -1,0 +1,192 @@
+{
+  "config": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "budgets": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "n_easy": 1500,
+    "n_pool": 800,
+    "pretrain_steps": 800,
+    "ft_steps": 150,
+    "lora_r": 4,
+    "proj_dim": 256,
+    "n_target_eval": 600,
+    "target_lo": 150
+  },
+  "no_ft": {
+    "target": {
+      "mean": 0.0028,
+      "std": 0.0039
+    },
+    "easy": {
+      "mean": 1.0,
+      "std": 0.0
+    }
+  },
+  "target_rate_in_pool": {
+    "mean": 0.1393,
+    "std": 0.0092
+  },
+  "budgets": {
+    "32": {
+      "target": {
+        "top": {
+          "mean": 0.4156,
+          "std": 0.1231
+        },
+        "random": {
+          "mean": 0.1083,
+          "std": 0.0306
+        },
+        "bottom": {
+          "mean": 0.0606,
+          "std": 0.0845
+        }
+      },
+      "easy": {
+        "top": {
+          "mean": 0.0278,
+          "std": 0.0347
+        },
+        "random": {
+          "mean": 0.5678,
+          "std": 0.2005
+        },
+        "bottom": {
+          "mean": 0.7344,
+          "std": 0.2512
+        }
+      },
+      "top_frac_target": {
+        "mean": 0.75,
+        "std": 0.1927
+      },
+      "rand_frac_target": {
+        "mean": 0.1247,
+        "std": 0.0443
+      }
+    },
+    "64": {
+      "target": {
+        "top": {
+          "mean": 0.5056,
+          "std": 0.123
+        },
+        "random": {
+          "mean": 0.2061,
+          "std": 0.0505
+        },
+        "bottom": {
+          "mean": 0.0967,
+          "std": 0.0606
+        }
+      },
+      "easy": {
+        "top": {
+          "mean": 0.0122,
+          "std": 0.0129
+        },
+        "random": {
+          "mean": 0.5344,
+          "std": 0.1405
+        },
+        "bottom": {
+          "mean": 0.7833,
+          "std": 0.1253
+        }
+      },
+      "top_frac_target": {
+        "mean": 0.6513,
+        "std": 0.1364
+      },
+      "rand_frac_target": {
+        "mean": 0.099,
+        "std": 0.0071
+      }
+    },
+    "128": {
+      "target": {
+        "top": {
+          "mean": 0.5511,
+          "std": 0.0351
+        },
+        "random": {
+          "mean": 0.2789,
+          "std": 0.1158
+        },
+        "bottom": {
+          "mean": 0.1217,
+          "std": 0.058
+        }
+      },
+      "easy": {
+        "top": {
+          "mean": 0.0167,
+          "std": 0.0072
+        },
+        "random": {
+          "mean": 0.8489,
+          "std": 0.0793
+        },
+        "bottom": {
+          "mean": 0.9489,
+          "std": 0.0235
+        }
+      },
+      "top_frac_target": {
+        "mean": 0.435,
+        "std": 0.0869
+      },
+      "rand_frac_target": {
+        "mean": 0.117,
+        "std": 0.0065
+      }
+    },
+    "256": {
+      "target": {
+        "top": {
+          "mean": 0.6228,
+          "std": 0.0095
+        },
+        "random": {
+          "mean": 0.5272,
+          "std": 0.1981
+        },
+        "bottom": {
+          "mean": 0.1866,
+          "std": 0.0205
+        }
+      },
+      "easy": {
+        "top": {
+          "mean": 0.0611,
+          "std": 0.0864
+        },
+        "random": {
+          "mean": 0.9556,
+          "std": 0.0291
+        },
+        "bottom": {
+          "mean": 0.9622,
+          "std": 0.0288
+        }
+      },
+      "top_frac_target": {
+        "mean": 0.293,
+        "std": 0.0424
+      },
+      "rand_frac_target": {
+        "mean": 0.1483,
+        "std": 0.0192
+      }
+    }
+  },
+  "runtime_sec": 102.0
+}
