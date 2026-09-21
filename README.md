@@ -55,15 +55,10 @@ datasel study               # full 3-seed study -> results/selection.json
 ## What it measures
 
 <!-- RESULTS:START -->
-*Produced by `experiments/run_study.py` (~100 CPU-seconds) and committed as
-[`results/selection.json`](results/selection.json); tables rendered by
-`experiments/make_report.py`. 3 seeds, LoRA r=4, matched fine-tuning steps.*
+*Every figure below is produced by `experiments/run_study.py` on CPU and committed as [`results/selection.json`](results/selection.json); the tables are rendered by `experiments/make_report.py`. 3 seeds, LoRA r=4, matched fine-tuning steps.*
 
-- base model (pre-trained on carry-free sums, then frozen): target accuracy
-  **0.003**, easy accuracy 1.000 — it genuinely cannot do the held-out target
-  capability (a+b >= 150).
-- adaptation pool has 13.9% target-slice examples; selection budgets are
-  k = [32, 64, 128, 256] LoRA fine-tuning examples, mean over seeds [0, 1, 2].
+- base model (pre-trained on carry-free sums, then frozen): target accuracy **0.003**, easy accuracy 1.000 — it genuinely cannot do the held-out target capability (a+b >= 150).
+- adaptation pool has 13.9% target-slice examples; selection budgets are k = [32, 64, 128, 256] LoRA fine-tuning examples, mean over seeds [0, 1, 2].
 
 ### Target accuracy vs selection budget (held-out, mean ± std over seeds)
 
@@ -74,12 +69,7 @@ datasel study               # full 3-seed study -> results/selection.json
 | 128 | **0.551 ± 0.035** | 0.279 ± 0.116 | 0.122 ± 0.058 |
 | 256 | **0.623 ± 0.009** | 0.527 ± 0.198 | 0.187 ± 0.021 |
 
-LESS top-k climbs 0.416 -> 0.623 as the budget grows. random-k also improves
-with budget but lags top-k at every k — it only reaches 0.527 where LESS hits
-0.623. The gap is widest at small budgets (0.416 vs 0.108 at k=32), well beyond
-the seed-to-seed spread, which is exactly the sample-efficiency LESS claims —
-LESS also reaches *lower variance* (±0.009 vs ±0.198 at the largest k). bottom-k
-stays lowest throughout.
+LESS top-k climbs 0.416 -> 0.623 as the budget grows. random-k also improves with budget but lags top-k at every k — it only reaches 0.527 where LESS hits 0.623. The gap is widest at small budgets (0.416 vs 0.108 at k=32), well beyond the seed-to-seed spread, which is exactly the sample-efficiency LESS claims — LESS also reaches *lower variance* (±0.009 vs ±0.198 at the largest k). bottom-k stays lowest throughout.
 
 ### Mechanism check — what the selector actually picks
 
@@ -90,9 +80,7 @@ stays lowest throughout.
 | 128 | 0.43 | 0.12 |
 | 256 | 0.29 | 0.15 |
 
-The pool is only 13.9% target examples, yet LESS top-k is far more
-target-concentrated than random sampling — the cosine-to-target-gradient score is
-finding the right data, not just resampling the pool.
+The pool is only 13.9% target examples, yet LESS top-k is far more target-concentrated than random sampling — the cosine-to-target-gradient score is finding the right data, not just resampling the pool.
 
 ### The honest cost — catastrophic forgetting of the base skill
 
@@ -103,10 +91,7 @@ finding the right data, not just resampling the pool.
 | 128 | 0.017 | 0.849 |
 | 256 | 0.061 | 0.956 |
 
-Fine-tuning adapters on narrowly *target-selected* data buys the new capability
-at the price of the old one: easy accuracy collapses to ~2%. Selecting *for
-influence* is efficient but not free — this is a real, reproducible downside,
-reported rather than hidden.
+Fine-tuning adapters on narrowly *target-selected* data buys the new capability at the price of the old one: easy accuracy collapses to ~3%. Selecting *for influence* is efficient but not free — this is a real, reproducible downside, reported rather than hidden.
 <!-- RESULTS:END -->
 
 ## Layout
