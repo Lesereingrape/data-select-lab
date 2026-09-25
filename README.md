@@ -146,7 +146,8 @@ PY
 The rerun behind the current tables did exactly that: written to a scratch path and
 compared field by field, it reproduced every published figure and all 72 per-seed
 accuracy cells identically, and only `runtime_sec` moved (102.0s against the published
-107.4s, because the machine was busier). The scratch path is relative on purpose:
+107.4s, because the machine was busier — of that pair only the second is still in this repo,
+and a test reads it back out of `results/selection.json`). The scratch path is relative on purpose:
 Git-Bash rewrites a `/tmp/...` argument before the script sees it, while `open()` in
 the snippet would resolve that same string against the drive root, so the two halves of
 a `/tmp` handoff never meet on Windows. CPU float reduction order follows the thread

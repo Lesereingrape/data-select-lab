@@ -63,3 +63,25 @@ def test_readme_runtime_claim_holds_for_the_committed_run():
     assert DATA["runtime_sec"] <= int(claim.group(1)) * 60, (
         f"README promises ~{claim.group(1)} CPU-minutes but the published run took "
         f"{DATA['runtime_sec']}s")
+
+
+def test_the_published_wall_clock_is_the_one_the_artifact_records():
+    """The rerun note pairs two runtimes and only the committed half of that is checkable."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    named = re.findall(r"published\s+(\d+(?:\.\d+)?)s(?![\d])", readme)
+    assert named, "the rerun note no longer names the published runtime"
+    assert len(named) == 1, f"the README names the published runtime more than once: {named}"
+    artifact = json.loads((ROOT / "results" / "selection.json").read_text(encoding="utf-8"))
+    assert float(named[0]) == artifact["runtime_sec"], (
+        f"README says the published run took {named[0]}s, "
+        f"results/selection.json records {artifact['runtime_sec']}s")
+
+
+def test_the_documented_rerun_writes_a_relative_scratch_file():
+    """`--out /tmp/...` is not one path across shells, so the recipe must not use it."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "--out /tmp/" not in readme, (
+        "the rerun recipe is back to a /tmp path; Git-Bash rewrites it before the script "
+        "sees it, so use a relative scratch file")
+    assert "again-check.json" in readme, (
+        "the rerun recipe no longer names the relative scratch file it documents")
