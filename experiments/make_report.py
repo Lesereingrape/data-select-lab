@@ -30,7 +30,7 @@ def build(data: dict) -> str:
     env = data["environment"]
     out.append(f"- measured under: Python {env['python']} on {env['platform']}, "
                f"torch {env['torch']}, {env['threads']} CPU threads, {env['device']} "
-               "— `experiments/run_study.py --out /tmp/again.json` reproduces every "
+               "— `experiments/run_study.py --out again-check.json` reproduces every "
                "figure in this file inside that environment (its `runtime_sec` is the "
                "one field a rerun is allowed to move), and nowhere else promises to")
     out.append("")

@@ -6,3 +6,6 @@ build/
 dist/
 .pytest_cache/
 .ruff_cache/
+
+# scratch rerun from the documented verification snippet
+again-check.json

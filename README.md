@@ -60,7 +60,7 @@ python experiments/make_report.py --write  # splice the README block from the JS
 
 - base model (pre-trained on carry-free sums, then frozen): target accuracy **0.003**, easy accuracy 1.000 — it genuinely cannot do the held-out target capability (a+b >= 150).
 - adaptation pool has 13.9% target-slice examples; selection budgets are k = [32, 64, 128, 256] LoRA fine-tuning examples, mean over seeds [0, 1, 2].
-- measured under: Python 3.13.7 on Windows-11-10.0.26200-SP0, torch 2.14.0+cpu, 8 CPU threads, cpu — `experiments/run_study.py --out /tmp/again.json` reproduces every figure in this file inside that environment (its `runtime_sec` is the one field a rerun is allowed to move), and nowhere else promises to
+- measured under: Python 3.13.7 on Windows-11-10.0.26200-SP0, torch 2.14.0+cpu, 8 CPU threads, cpu — `experiments/run_study.py --out again-check.json` reproduces every figure in this file inside that environment (its `runtime_sec` is the one field a rerun is allowed to move), and nowhere else promises to
 
 ### Target accuracy vs selection budget (held-out, mean ± population std over seeds)
 
@@ -132,11 +132,11 @@ nothing in the tables above has to be taken on trust:
 To check a rerun against the published artifact:
 
 ```bash
-python experiments/run_study.py --out /tmp/again.json   # leaves results/ untouched
+python experiments/run_study.py --out again-check.json   # leaves results/ untouched
 python - <<'PY'
 import json
 a = json.load(open("results/selection.json", encoding="utf-8"))
-b = json.load(open("/tmp/again.json", encoding="utf-8"))
+b = json.load(open("again-check.json", encoding="utf-8"))
 allowed = {"environment", "per_seed", "runtime_sec"}
 print(sorted(set(a) ^ set(b)) or "no new keys;",
       [k for k in set(a) & set(b) - allowed if a[k] != b[k]] or "every figure matched")
@@ -146,7 +146,10 @@ PY
 The rerun behind the current tables did exactly that: written to a scratch path and
 compared field by field, it reproduced every published figure and all 72 per-seed
 accuracy cells identically, and only `runtime_sec` moved (102.0s against the published
-107.4s, because the machine was busier). CPU float reduction order follows the thread
+107.4s, because the machine was busier). The scratch path is relative on purpose:
+Git-Bash rewrites a `/tmp/...` argument before the script sees it, while `open()` in
+the snippet would resolve that same string against the drive root, so the two halves of
+a `/tmp` handoff never meet on Windows. CPU float reduction order follows the thread
 count and torch build recorded in `environment`, so bit-exactness is promised inside
 that environment and nowhere else.
 
