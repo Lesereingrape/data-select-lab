@@ -1,20 +1,28 @@
 """Full LoRA + LESS data-selection study -> results/selection.json (CPU).
 
+    python experiments/run_study.py [--out PATH]
+
 Three seeds x four budgets x three selection strategies (LESS top-k / random /
 bottom-k). For every cell we record held-out target accuracy (the capability the
 selection targets) and easy accuracy (the base skill — we do NOT hide that
 narrow selection causes catastrophic forgetting). Aggregates are mean +/- std
-across seeds.
+across seeds, and the raw per-seed cells are committed alongside them so the
+aggregates can be recomputed rather than believed.
+
+``--out`` exists so a verification rerun can be written to a scratch path and
+diffed field for field against the committed artifact.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import statistics
 import time
 from pathlib import Path
 
 from datasel.pipeline import run_seed
+from datasel.provenance import environment
 
 SEEDS = (0, 1, 2)
 BUDGETS = (32, 64, 128, 256)
@@ -46,15 +54,19 @@ def run_study(seeds=SEEDS, budgets=BUDGETS, out="results/selection.json") -> dic
                    "n_pool": 800, "pretrain_steps": 800, "ft_steps": 150,
                    "lora_r": 4, "proj_dim": 256, "n_target_eval": 600,
                    "target_lo": 150},
+        "environment": environment(),
         "no_ft": {"target": _ms([r["no_ft"]["target_acc"] for r in runs]),
                   "easy": _ms([r["no_ft"]["easy_acc"] for r in runs])},
         "target_rate_in_pool": _ms([r["target_rate_in_pool"] for r in runs]),
         "budgets": agg,
+        # The raw per-seed cells behind every mean above, so a test (or a reader)
+        # can recompute the aggregates instead of taking them on trust.
+        "per_seed": {str(s): r for s, r in zip(seeds, runs, strict=True)},
         "runtime_sec": round(time.time() - t0, 1),
     }
     path = Path(out)
     path.parent.mkdir(exist_ok=True)
-    path.write_text(json.dumps(result, indent=2))
+    path.write_text(json.dumps(result, indent=2), encoding="utf-8")
 
     print("LESS top-k vs random-k target accuracy (mean over seeds):")
     for k in budgets:
@@ -67,4 +79,9 @@ def run_study(seeds=SEEDS, budgets=BUDGETS, out="results/selection.json") -> dic
 
 
 if __name__ == "__main__":
-    run_study()
+    parser = argparse.ArgumentParser(prog="run_study")
+    parser.add_argument("--out", default="results/selection.json",
+                        help="where to write the artifact; point it at a scratch path "
+                             "to rerun and diff against the committed one")
+    args = parser.parse_args()
+    run_study(out=args.out)

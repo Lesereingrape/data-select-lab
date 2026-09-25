@@ -27,9 +27,16 @@ def build(data: dict) -> str:
     out.append(f"- adaptation pool has {tr:.1%} target-slice examples; selection "
                f"budgets are k = {budgets} LoRA fine-tuning examples, mean over "
                f"seeds {cfg['seeds']}.")
+    env = data["environment"]
+    out.append(f"- measured under: Python {env['python']} on {env['platform']}, "
+               f"torch {env['torch']}, {env['threads']} CPU threads, {env['device']} "
+               "— `experiments/run_study.py --out /tmp/again.json` reproduces every "
+               "figure in this file inside that environment (its `runtime_sec` is the "
+               "one field a rerun is allowed to move), and nowhere else promises to")
     out.append("")
 
-    out.append("### Target accuracy vs selection budget (held-out, mean ± std over seeds)")
+    out.append("### Target accuracy vs selection budget (held-out, mean ± population "
+               "std over seeds)")
     out.append("")
     out.append("| k | LESS top-k | random-k | bottom-k (anti) |")
     out.append("|---:|-----------:|---------:|----------------:|")
@@ -42,19 +49,43 @@ def build(data: dict) -> str:
     bt = data["budgets"]
     top_last = bt[last]["target"]["top"]["mean"]
     top_first = bt[first]["target"]["top"]["mean"]
-    rnd_first = bt[first]["target"]["random"]["mean"]
     rnd_last = bt[last]["target"]["random"]["mean"]
     top_std_last = bt[last]["target"]["top"]["std"]
     rnd_std_last = bt[last]["target"]["random"]["std"]
-    out.append(f"LESS top-k climbs {top_first:.3f} -> {top_last:.3f} as the budget "
-               f"grows. random-k also improves with budget but lags top-k at every "
-               f"k — it only reaches {rnd_last:.3f} where LESS hits {top_last:.3f}. "
-               f"The gap is widest at small budgets ({top_first:.3f} vs "
-               f"{rnd_first:.3f} at k={budgets[0]}), well beyond the seed-to-seed "
-               f"spread, which is exactly the sample-efficiency LESS claims — LESS "
-               f"also reaches *lower variance* (±{top_std_last:.3f} vs "
-               f"±{rnd_std_last:.3f} at the largest k). bottom-k stays lowest "
-               "throughout.")
+    spread = {str(k): max(bt[str(k)]["target"][m]["std"] for m in ("top", "random"))
+              for k in budgets}
+    gaps = {str(k): bt[str(k)]["target"]["top"]["mean"]
+            - bt[str(k)]["target"]["random"]["mean"] for k in budgets}
+    widest_k = max(gaps, key=gaps.get)
+    gap_widest = gaps[widest_k]
+    beyond = gap_widest > spread[widest_k]
+    always_ahead = all(g > 0 for g in gaps.values())
+    bottom_lastest = all(bt[str(k)]["target"]["bottom"]["mean"]
+                         <= min(bt[str(k)]["target"][m]["mean"]
+                                for m in ("top", "random")) for k in budgets)
+    low = bt[first]["target"]["bottom"]["mean"]
+    high = bt[last]["target"]["bottom"]["mean"]
+    n_seeds = len(cfg["seeds"])
+    out.append(
+        f"LESS top-k climbs {top_first:.3f} -> {top_last:.3f} as the budget grows. "
+        + ("random-k also improves with budget but stays behind top-k at every k; "
+           if always_ahead else
+           "random-k overtakes top-k at some k (see the table); ")
+        + f"it reaches {rnd_last:.3f} where LESS hits {top_last:.3f}. "
+        f"The gap is widest at k={widest_k} "
+        f"({bt[widest_k]['target']['top']['mean']:.3f} vs "
+        f"{bt[widest_k]['target']['random']['mean']:.3f}, i.e. {gap_widest:.3f}), and "
+        + (f"that is larger than the seed-to-seed spread there (±{spread[widest_k]:.3f}), "
+           "so the ordering is not a seed artefact"
+           if beyond else
+           f"that sits inside the seed-to-seed spread there "
+           f"(±{spread[widest_k]:.3f}), so {n_seeds} seeds do not settle the ordering")
+        + f". LESS is also calmer across seeds at the largest k "
+        f"(±{top_std_last:.3f} vs ±{rnd_std_last:.3f}). bottom-k "
+        + ("stays lowest throughout" if bottom_lastest else
+           "is not lowest throughout")
+        + f" ({low:.3f} at k={budgets[0]}, {high:.3f} at k={budgets[-1]})."
+    )
     out.append("")
 
     out.append("### Mechanism check — what the selector actually picks")
@@ -90,5 +121,26 @@ def build(data: dict) -> str:
     return "\n".join(out)
 
 
+def _write(path: Path, block: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    start, end = "<!-- RESULTS:START -->", "<!-- RESULTS:END -->"
+    head, _, rest = text.partition(start)
+    _, _, tail = rest.partition(end)
+    nl = "\n"
+    path.write_text(f"{head}{start}{nl}{block}{nl}{end}{tail}", encoding="utf-8")
+
+
 if __name__ == "__main__":
-    print(build(json.loads(Path("results/selection.json").read_text())))
+    import argparse
+
+    ap = argparse.ArgumentParser(prog="make_report")
+    ap.add_argument("--write", action="store_true",
+                    help="splice the block into README.md instead of printing it")
+    ap.add_argument("--results", default="results/selection.json")
+    args = ap.parse_args()
+    rendered = build(json.loads(Path(args.results).read_text(encoding="utf-8")))
+    if args.write:
+        _write(Path("README.md"), rendered)
+        print("README results block rewritten")
+    else:
+        print(rendered)

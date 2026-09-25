@@ -25,8 +25,8 @@ sampling at the same budget.
   **frozen**. It therefore scores ~0 on the held-out **target capability**
   (`a+b >= 150`) — real headroom for a selection method to demonstrate.
 - **Adaptation pool:** a broad mix of sums; only ~14% are target-slice examples.
-- **PEFT:** LoRA adapters (r=4) on every linear layer — ~11k of ~112k params
-  (~10%) are trainable, so per-example gradients are cheap.
+- **PEFT:** LoRA adapters (r=4) on every linear layer — ~8.5k of ~112k params
+  (~8%) are trainable, so per-example gradients are cheap.
 
 ## The method (LESS, sized for a laptop)
 
@@ -50,6 +50,7 @@ the *selection rule*, not extra compute.
 pip install -e .            # torch is the only dependency
 datasel demo                # one seeded run: LESS top-k vs random vs bottom
 datasel study               # full 3-seed study -> results/selection.json
+python experiments/make_report.py --write  # splice the README block from the JSON
 ```
 
 ## What it measures
@@ -59,8 +60,9 @@ datasel study               # full 3-seed study -> results/selection.json
 
 - base model (pre-trained on carry-free sums, then frozen): target accuracy **0.003**, easy accuracy 1.000 — it genuinely cannot do the held-out target capability (a+b >= 150).
 - adaptation pool has 13.9% target-slice examples; selection budgets are k = [32, 64, 128, 256] LoRA fine-tuning examples, mean over seeds [0, 1, 2].
+- measured under: Python 3.13.7 on Windows-11-10.0.26200-SP0, torch 2.14.0+cpu, 8 CPU threads, cpu — `experiments/run_study.py --out /tmp/again.json` reproduces every figure in this file inside that environment (its `runtime_sec` is the one field a rerun is allowed to move), and nowhere else promises to
 
-### Target accuracy vs selection budget (held-out, mean ± std over seeds)
+### Target accuracy vs selection budget (held-out, mean ± population std over seeds)
 
 | k | LESS top-k | random-k | bottom-k (anti) |
 |---:|-----------:|---------:|----------------:|
@@ -69,7 +71,7 @@ datasel study               # full 3-seed study -> results/selection.json
 | 128 | **0.551 ± 0.035** | 0.279 ± 0.116 | 0.122 ± 0.058 |
 | 256 | **0.623 ± 0.009** | 0.527 ± 0.198 | 0.187 ± 0.021 |
 
-LESS top-k climbs 0.416 -> 0.623 as the budget grows. random-k also improves with budget but lags top-k at every k — it only reaches 0.527 where LESS hits 0.623. The gap is widest at small budgets (0.416 vs 0.108 at k=32), well beyond the seed-to-seed spread, which is exactly the sample-efficiency LESS claims — LESS also reaches *lower variance* (±0.009 vs ±0.198 at the largest k). bottom-k stays lowest throughout.
+LESS top-k climbs 0.416 -> 0.623 as the budget grows. random-k also improves with budget but stays behind top-k at every k; it reaches 0.527 where LESS hits 0.623. The gap is widest at k=32 (0.416 vs 0.108, i.e. 0.307), and that is larger than the seed-to-seed spread there (±0.123), so the ordering is not a seed artefact. LESS is also calmer across seeds at the largest k (±0.009 vs ±0.198). bottom-k stays lowest throughout (0.061 at k=32, 0.187 at k=256).
 
 ### Mechanism check — what the selector actually picks
 
@@ -104,11 +106,49 @@ src/datasel/
   less.py     # per-example LoRA-gradient features + random projection + cosine select
   train.py    # pretrain / attach_lora / finetune_lora / exact slice-wise evaluate
   pipeline.py # the isolated per-seed experiment (selection is the only variable)
+  provenance.py # the python/platform/torch/thread/device this run was measured on
 experiments/
   run_study.py   # 3 seeds x 4 budgets x 3 strategies -> results/selection.json
-  make_report.py # render README tables straight from the committed JSON
-tests/           # verifier exactness, LoRA freeze/identity, LESS ranking properties
+                 # (--out writes a scratch artifact so a rerun can be diffed)
+  make_report.py # render README tables straight from the committed JSON (--write splices)
+tests/           # verifier exactness, LoRA freeze/identity, LESS ranking properties,
+                 # plus the three integrity guards below
 ```
+
+## Reproducing and honesty
+
+`results/selection.json` commits both the aggregates and the raw per-seed cells, so
+nothing in the tables above has to be taken on trust:
+
+- `tests/test_artifact_is_internally_consistent.py` recomputes every published
+  mean and population std from the per-seed rows in the same file.
+- `tests/test_readme_matches_results.py` byte-compares the README block against
+  what `make_report.py` renders, so prose and numbers cannot drift apart.
+- `tests/test_readme_size_claims.py` measures the hand-written figures in the setup
+  section (base parameters, trainable LoRA parameters, target share of the pool,
+  wall-clock) against the code and the artifact rather than trusting them — it is
+  what caught this README over-reporting the adapter size.
+
+To check a rerun against the published artifact:
+
+```bash
+python experiments/run_study.py --out /tmp/again.json   # leaves results/ untouched
+python - <<'PY'
+import json
+a = json.load(open("results/selection.json", encoding="utf-8"))
+b = json.load(open("/tmp/again.json", encoding="utf-8"))
+allowed = {"environment", "per_seed", "runtime_sec"}
+print(sorted(set(a) ^ set(b)) or "no new keys;",
+      [k for k in set(a) & set(b) - allowed if a[k] != b[k]] or "every figure matched")
+PY
+```
+
+The rerun behind the current tables did exactly that: written to a scratch path and
+compared field by field, it reproduced every published figure and all 72 per-seed
+accuracy cells identically, and only `runtime_sec` moved (102.0s against the published
+107.4s, because the machine was busier). CPU float reduction order follows the thread
+count and torch build recorded in `environment`, so bit-exactness is promised inside
+that environment and nowhere else.
 
 ## Honest limitations
 

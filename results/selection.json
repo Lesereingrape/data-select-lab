@@ -20,6 +20,13 @@
     "n_target_eval": 600,
     "target_lo": 150
   },
+  "environment": {
+    "python": "3.13.7",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cpu",
+    "threads": 8,
+    "device": "cpu"
+  },
   "no_ft": {
     "target": {
       "mean": 0.0028,
@@ -188,5 +195,229 @@
       }
     }
   },
-  "runtime_sec": 102.0
+  "per_seed": {
+    "0": {
+      "seed": 0,
+      "no_ft": {
+        "target_acc": 0.0,
+        "easy_acc": 1.0
+      },
+      "budgets": {
+        "32": {
+          "top": {
+            "target_acc": 0.4467,
+            "easy_acc": 0.0
+          },
+          "random": {
+            "target_acc": 0.145,
+            "easy_acc": 0.5867
+          },
+          "bottom": {
+            "target_acc": 0.18,
+            "easy_acc": 0.38
+          },
+          "top_frac_target": 0.969,
+          "rand_frac_target": 0.156
+        },
+        "64": {
+          "top": {
+            "target_acc": 0.4017,
+            "easy_acc": 0.0067
+          },
+          "random": {
+            "target_acc": 0.135,
+            "easy_acc": 0.52
+          },
+          "bottom": {
+            "target_acc": 0.1767,
+            "easy_acc": 0.86
+          },
+          "top_frac_target": 0.688,
+          "rand_frac_target": 0.094
+        },
+        "128": {
+          "top": {
+            "target_acc": 0.5583,
+            "easy_acc": 0.0267
+          },
+          "random": {
+            "target_acc": 0.1733,
+            "easy_acc": 0.9033
+          },
+          "bottom": {
+            "target_acc": 0.1817,
+            "easy_acc": 0.9433
+          },
+          "top_frac_target": 0.398,
+          "rand_frac_target": 0.125
+        },
+        "256": {
+          "top": {
+            "target_acc": 0.6117,
+            "easy_acc": 0.0
+          },
+          "random": {
+            "target_acc": 0.47,
+            "easy_acc": 0.9867
+          },
+          "bottom": {
+            "target_acc": 0.2133,
+            "easy_acc": 0.93
+          },
+          "top_frac_target": 0.254,
+          "rand_frac_target": 0.148
+        }
+      },
+      "target_rate_in_pool": 0.127
+    },
+    "1": {
+      "seed": 1,
+      "no_ft": {
+        "target_acc": 0.0083,
+        "easy_acc": 1.0
+      },
+      "budgets": {
+        "32": {
+          "top": {
+            "target_acc": 0.5483,
+            "easy_acc": 0.0767
+          },
+          "random": {
+            "target_acc": 0.11,
+            "easy_acc": 0.8033
+          },
+          "bottom": {
+            "target_acc": 0.0017,
+            "easy_acc": 0.9333
+          },
+          "top_frac_target": 0.781,
+          "rand_frac_target": 0.062
+        },
+        "64": {
+          "top": {
+            "target_acc": 0.6783,
+            "easy_acc": 0.03
+          },
+          "random": {
+            "target_acc": 0.2367,
+            "easy_acc": 0.7133
+          },
+          "bottom": {
+            "target_acc": 0.0833,
+            "easy_acc": 0.8833
+          },
+          "top_frac_target": 0.797,
+          "rand_frac_target": 0.094
+        },
+        "128": {
+          "top": {
+            "target_acc": 0.59,
+            "easy_acc": 0.01
+          },
+          "random": {
+            "target_acc": 0.44,
+            "easy_acc": 0.9067
+          },
+          "bottom": {
+            "target_acc": 0.0433,
+            "easy_acc": 0.98
+          },
+          "top_frac_target": 0.555,
+          "rand_frac_target": 0.117
+        },
+        "256": {
+          "top": {
+            "target_acc": 0.6217,
+            "easy_acc": 0.0
+          },
+          "random": {
+            "target_acc": 0.7933,
+            "easy_acc": 0.9633
+          },
+          "bottom": {
+            "target_acc": 0.1633,
+            "easy_acc": 1.0
+          },
+          "top_frac_target": 0.352,
+          "rand_frac_target": 0.172
+        }
+      },
+      "target_rate_in_pool": 0.149
+    },
+    "2": {
+      "seed": 2,
+      "no_ft": {
+        "target_acc": 0.0,
+        "easy_acc": 1.0
+      },
+      "budgets": {
+        "32": {
+          "top": {
+            "target_acc": 0.2517,
+            "easy_acc": 0.0067
+          },
+          "random": {
+            "target_acc": 0.07,
+            "easy_acc": 0.3133
+          },
+          "bottom": {
+            "target_acc": 0.0,
+            "easy_acc": 0.89
+          },
+          "top_frac_target": 0.5,
+          "rand_frac_target": 0.156
+        },
+        "64": {
+          "top": {
+            "target_acc": 0.4367,
+            "easy_acc": 0.0
+          },
+          "random": {
+            "target_acc": 0.2467,
+            "easy_acc": 0.37
+          },
+          "bottom": {
+            "target_acc": 0.03,
+            "easy_acc": 0.6067
+          },
+          "top_frac_target": 0.469,
+          "rand_frac_target": 0.109
+        },
+        "128": {
+          "top": {
+            "target_acc": 0.505,
+            "easy_acc": 0.0133
+          },
+          "random": {
+            "target_acc": 0.2233,
+            "easy_acc": 0.7367
+          },
+          "bottom": {
+            "target_acc": 0.14,
+            "easy_acc": 0.9233
+          },
+          "top_frac_target": 0.352,
+          "rand_frac_target": 0.109
+        },
+        "256": {
+          "top": {
+            "target_acc": 0.635,
+            "easy_acc": 0.1833
+          },
+          "random": {
+            "target_acc": 0.3183,
+            "easy_acc": 0.9167
+          },
+          "bottom": {
+            "target_acc": 0.1833,
+            "easy_acc": 0.9567
+          },
+          "top_frac_target": 0.273,
+          "rand_frac_target": 0.125
+        }
+      },
+      "target_rate_in_pool": 0.142
+    }
+  },
+  "runtime_sec": 107.4
 }
